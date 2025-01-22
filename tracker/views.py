@@ -1,11 +1,18 @@
-from rest_framework import generics
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
 from .models import Expense
 from .serializers import ExpenseSerializer
 
-class ExpenseListCreateView(generics.ListCreateAPIView):
-    queryset = Expense.objects.all()
-    serializer_class = ExpenseSerializer
+class ExpenseList(APIView):
+    def get(self, request):
+        expenses = Expense.objects.all()
+        serializer = ExpenseSerializer(expenses, many=True)
+        return Response(serializer.data)
 
-class ExpenseDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Expense.objects.all()
-    serializer_class = ExpenseSerializer
+    def post(self, request):
+        serializer = ExpenseSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
