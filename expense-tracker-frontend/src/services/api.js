@@ -50,7 +50,7 @@ API.interceptors.response.use(
 // Fetch expenses
 export const getExpenses = () => API.get("expenses/");
 
-// Add expense
+// Add expense to list
 export const addExpense = (expense) => API.post("expenses/", expense);
 
 export default API;
