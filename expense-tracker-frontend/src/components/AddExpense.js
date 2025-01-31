@@ -1,13 +1,12 @@
-import React, { useState } from 'react';
-import { addExpense } from '../services/api';
+import React, { useState } from "react";
+import { addExpense } from "../services/api";
 
 const AddExpense = ({ onAdd }) => {
   const [formData, setFormData] = useState({
-    category: '',
-    amount: '',
-    date: '',
-    description: '',
-    user: 1
+    category: "",
+    amount: "",
+    date: "",
+    description: "",
   });
 
   const handleChange = (e) => {
@@ -18,19 +17,19 @@ const AddExpense = ({ onAdd }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Add the user field here - hardcoded for now
+    const userId = 1; // TODO: Replace with actual user ID from authentication
 
     const expenseData = {
-      
       ...formData,
+      user: userId, // Attach user ID
     };
 
     try {
       const response = await addExpense(expenseData);
-      onAdd(response.data); // Update the expense list in the parent component
-      setFormData({ category: '', amount: '', date: '', description: '' }); // Reset form
+      onAdd(response.data);
+      setFormData({ category: "", amount: "", date: "", description: "" }); // Reset form
     } catch (error) {
-      console.error('Error adding expense:', error);
+      console.error("Error adding expense:", error);
     }
   };
 

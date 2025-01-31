@@ -1,13 +1,20 @@
-import React, { useEffect, useState } from 'react';
-import { getExpenses } from '../services/api';
-import AddExpense from './AddExpense';
+import React, { useEffect, useState } from "react";
+import { getExpenses } from "../services/api";
+import AddExpense from "./AddExpense";
+import { useNavigate } from "react-router-dom";
 
 const ExpenseList = () => {
   const [expenses, setExpenses] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    getExpenses().then((response) => setExpenses(response.data));
-  }, []);
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+      navigate("/login"); // Redirect if not logged in
+    } else {
+      getExpenses().then((response) => setExpenses(response.data));
+    }
+  }, [navigate]);
 
   const handleAddExpense = (newExpense) => {
     setExpenses((prevExpenses) => [...prevExpenses, newExpense]);
