@@ -13,13 +13,13 @@ API.interceptors.request.use((config) => {
   return config;
 });
 
-// Handle 401 (Unauthorized) Responses
+// Handle 401 (Unauthorized) responses
 API.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error.response && error.response.status === 401) {
       try {
-        // Attempt to refresh token
+        // Try to refresh the token
         const refreshToken = localStorage.getItem("refresh_token");
         if (refreshToken) {
           const refreshResponse = await axios.post(
@@ -30,16 +30,17 @@ API.interceptors.response.use(
           const newAccessToken = refreshResponse.data.access;
           localStorage.setItem("access_token", newAccessToken);
 
-          // Retry the failed request with new token
+          // Retry the failed request with the new token
           error.config.headers.Authorization = `Bearer ${newAccessToken}`;
           return axios(error.config);
         }
       } catch (refreshError) {
         console.error("Token refresh failed:", refreshError);
+
+        // Remove invalid tokens and redirect to login
         localStorage.removeItem("access_token");
         localStorage.removeItem("refresh_token");
 
-        // Redirect to login page
         window.location.href = "/login";
       }
     }
@@ -48,9 +49,31 @@ API.interceptors.response.use(
 );
 
 // Fetch expenses
-export const getExpenses = () => API.get("expenses/");
+export const getExpenses = async () => {
+  try {
+    return await API.get("expenses/");
+  } catch (error) {
+    console.error("Error fetching expenses:", error);
+  }
+};
 
-// Add expense to list
-export const addExpense = (expense) => API.post("expenses/", expense);
+// Add expense
+export const addExpense = async (expense) => {
+  try {
+    return await API.post("expenses/", expense);
+  } catch (error) {
+    console.error("Error adding expense:", error);
+    if (error.response?.status === 401) {
+      window.location.href = "/login"; // Force redirect if unauthorized
+    }
+  }
+};
+
+export const logout = () => {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    window.location.href = "/login"; // Redirect to login page
+  };
+  
 
 export default API;

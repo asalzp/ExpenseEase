@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { getExpenses } from "../services/api";
 import AddExpense from "./AddExpense";
 import { useNavigate } from "react-router-dom";
+import Navbar from "./Navbar";
 
 const ExpenseList = () => {
   const [expenses, setExpenses] = useState([]);
@@ -22,6 +23,7 @@ const ExpenseList = () => {
 
   return (
     <div>
+      <Navbar /> {/* Add Navbar Here */}
       <h1>Expense Tracker</h1>
       <AddExpense onAdd={handleAddExpense} />
       <ul>
