@@ -23,7 +23,7 @@ API.interceptors.response.use(
         const refreshToken = localStorage.getItem("refresh_token");
         if (refreshToken) {
           const refreshResponse = await axios.post(
-            "http://127.0.0.1:8000/api/token/refresh/",
+            "token/refresh/",
             { refresh: refreshToken }
           );
 
@@ -69,11 +69,35 @@ export const addExpense = async (expense) => {
   }
 };
 
+// Update expense
+export const updateExpense = async (id, updatedExpense) => {
+  try {
+    return await API.put(`expenses/${id}/`, updatedExpense);
+  } catch (error) {
+    console.error("Error updating expense:", error);
+    if (error.response?.status === 401) {
+      window.location.href = "/login";
+    }
+  }
+};
+
+// Delete expense
+export const deleteExpense = async (id) => {
+  try {
+    return await API.delete(`expenses/${id}/`);
+  } catch (error) {
+    console.error("Error deleting expense:", error);
+    if (error.response?.status === 401) {
+      window.location.href = "/login";
+    }
+  }
+};
+
+// Logout
 export const logout = () => {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
-    window.location.href = "/login"; // Redirect to login page
-  };
-  
+  localStorage.removeItem("access_token");
+  localStorage.removeItem("refresh_token");
+  window.location.href = "/login"; // Redirect to login page
+};
 
 export default API;
