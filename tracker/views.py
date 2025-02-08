@@ -75,14 +75,14 @@ class ExpenseDetail(APIView):
     def get_object(self, expense_id, user):
         """Helper method to get an expense object, ensuring it belongs to the logged-in user"""
         try:
-            return Expense.objects.get(id=pk, user=user)  # Use 'id' here
+            return Expense.objects.get(id=expense_id, user=user)  # Use 'id' here
         except Expense.DoesNotExist:
             return None
 
     def put(self, request, expense_id):
         """Update an expense"""
         expense = self.get_object(expense_id, request.user)
-        print(f"Received PUT request for expense {pk}: {request.data}")
+        print(f"Received PUT request for expense {expense_id}: {request.data}")
         if not expense:
             return Response({"error": "Expense not found"}, status=status.HTTP_404_NOT_FOUND)
 
