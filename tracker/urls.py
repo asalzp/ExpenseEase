@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import ExpenseList, register_user, ExpenseDetail
-from .views import MyTokenObtainPairView, MyTokenRefreshView
+from .views import MyTokenObtainPairView, MyTokenRefreshView, expense_summary
 
 urlpatterns = [
 path('register/', register_user, name='register'),
@@ -8,5 +8,6 @@ path('expenses/', ExpenseList.as_view(), name='expense-list'),
 path('token/', MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
 path('token/refresh/', MyTokenRefreshView.as_view(), name='token_refresh'),
 path('expenses/<int:expense_id>/', ExpenseDetail.as_view(), name='expense-detail'),
+path('expense-summary/', expense_summary, name='expense_summary'),
 
 ]

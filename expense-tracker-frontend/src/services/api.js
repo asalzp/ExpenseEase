@@ -94,11 +94,26 @@ export const deleteExpense = async (id) => {
   }
 };
 
+
+// Fetch expense summary
+export const getExpenseSummary = async () => {
+  try {
+    return await API.get("expense-summary/");
+  } catch (error) {
+    console.error("Error fetching expense summary:", error);
+    if (error.response?.status === 401) {
+      window.location.href = "/login";
+    }
+  }
+};
+
+
 // Logout
 export const logout = () => {
   localStorage.removeItem("access_token");
   localStorage.removeItem("refresh_token");
   window.location.href = "/login"; // Redirect to login page
 };
+
 
 export default API;

@@ -1,7 +1,8 @@
 from django.contrib.auth.models import User
+from django.db.models import Sum
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
@@ -30,6 +31,27 @@ def register_user(request):
 
     return Response({"message": "User created successfully"}, status=status.HTTP_201_CREATED)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def expense_summary(request):
+    user = request.user
+
+    # Total amount spent
+    total_spent = Expense.objects.filter(user=user).aggregate(Sum('amount'))['amount__sum'] or 0
+
+    # Expense breakdown by category
+    category_breakdown = (
+        Expense.objects
+        .filter(user=user)
+        .values('category')
+        .annotate(total=Sum('amount'))
+        .order_by('-total')
+    )
+
+    return Response({
+        "total_spent": total_spent,
+        "category_breakdown": list(category_breakdown)
+    })
 
 # Expense Views
 class ExpenseList(APIView):

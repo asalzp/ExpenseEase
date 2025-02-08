@@ -61,6 +61,11 @@ const ExpenseList = () => {
     setFilters({ ...filters, [e.target.name]: e.target.value });
   };
 
+  const handleGoToSummary = () => {
+    navigate("/summary");  // Redirect to summary page
+  };
+
+
   return (
     <div>
       <Navbar />
@@ -80,6 +85,9 @@ const ExpenseList = () => {
           </select>
         </div>
       </div>
+
+      {/* Button to go to the Expense Summary page */}
+      <button onClick={handleGoToSummary}>Go to Expense Summary</button>
 
       {/* Expense List */}
       <ul>
