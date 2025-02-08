@@ -8,6 +8,8 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from django.contrib.auth.hashers import make_password
 from .models import Expense
 from .serializers import ExpenseSerializer
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters
 
 # User Registration View
 @api_view(['POST'])
@@ -34,8 +36,24 @@ class ExpenseList(APIView):
     """Handles listing and creating expenses"""
     permission_classes = [IsAuthenticated] 
     
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    
+    # Enable filtering by category and date
+    filterset_fields = ['category', 'date']
+    
+    # Enable sorting by date or amount
+    ordering_fields = ['date', 'amount']
+    
     def get(self, request):
         expenses = Expense.objects.filter(user=request.user)  # Get only the logged-in user's expenses
+
+        # Get ordering query parameter
+        ordering = request.query_params.get('ordering', '')
+
+        # Apply sorting if 'ordering' is provided
+        if ordering:
+            expenses = expenses.order_by(ordering)
+        
         serializer = ExpenseSerializer(expenses, many=True)
         return Response(serializer.data)
 
@@ -57,14 +75,14 @@ class ExpenseDetail(APIView):
     def get_object(self, expense_id, user):
         """Helper method to get an expense object, ensuring it belongs to the logged-in user"""
         try:
-            return Expense.objects.get(id=expense_id, user=user)  # Use 'id' here
+            return Expense.objects.get(id=pk, user=user)  # Use 'id' here
         except Expense.DoesNotExist:
             return None
 
     def put(self, request, expense_id):
         """Update an expense"""
         expense = self.get_object(expense_id, request.user)
-        print(f"Received PUT request for expense {expense_id}: {request.data}")
+        print(f"Received PUT request for expense {pk}: {request.data}")
         if not expense:
             return Response({"error": "Expense not found"}, status=status.HTTP_404_NOT_FOUND)
 

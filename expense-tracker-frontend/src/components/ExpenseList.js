@@ -8,16 +8,25 @@ const ExpenseList = () => {
   const [expenses, setExpenses] = useState([]);
   const [editMode, setEditMode] = useState(null);
   const [editData, setEditData] = useState({});
+  const [filters, setFilters] = useState({ category: "", date: "", sort: "" });
   const navigate = useNavigate();
+
+  const categories = ["Food", "Transport", "Entertainment", "Bills", "Shopping", "Other"];
 
   useEffect(() => {
     const token = localStorage.getItem("access_token");
     if (!token) {
       navigate("/login"); // Redirect if not logged in
     } else {
-      getExpenses().then((response) => setExpenses(response.data));
+      // Construct query params including filters and sort
+      const urlParams = new URLSearchParams();
+      if (filters.category) urlParams.append("category", filters.category);
+      if (filters.date) urlParams.append("date", filters.date);
+      if (filters.sort) urlParams.append("ordering", filters.sort);
+  
+      getExpenses(urlParams.toString()).then((response) => setExpenses(response.data));
     }
-  }, [navigate]);
+  }, [navigate, filters]);
 
   const handleAddExpense = (newExpense) => {
     setExpenses((prevExpenses) => [...prevExpenses, newExpense]);
@@ -31,7 +40,7 @@ const ExpenseList = () => {
   const handleUpdate = async () => {
     try {
       await updateExpense(editMode, editData);
-      setExpenses(expenses.map(exp => (exp.id === editMode ? editData : exp)));
+      setExpenses(expenses.map((exp) => (exp.id === editMode ? editData : exp)));
       setEditMode(null);
     } catch (error) {
       console.error("Error updating expense:", error);
@@ -41,10 +50,15 @@ const ExpenseList = () => {
   const handleDelete = async (id) => {
     try {
       await deleteExpense(id);
-      setExpenses(expenses.filter(exp => exp.id !== id));
+      setExpenses(expenses.filter((exp) => exp.id !== id));
     } catch (error) {
       console.error("Error deleting expense:", error);
     }
+  };
+
+  // Handle input changes for filters
+  const handleFilterChange = (e) => {
+    setFilters({ ...filters, [e.target.name]: e.target.value });
   };
 
   return (
@@ -52,16 +66,37 @@ const ExpenseList = () => {
       <Navbar />
       <h1>Expense Tracker</h1>
       <AddExpense onAdd={handleAddExpense} />
+
+      {/* Filter and Sort Controls */}
+      <div>
+        <div>
+          <label>Sort By:</label>
+          <select name="sort" value={filters.sort} onChange={handleFilterChange}>
+            <option value="">Select Sorting Option</option>
+            <option value="date">Date (Oldest to Newest)</option>
+            <option value="-date">Date (Newest to Oldest)</option>
+            <option value="amount">Amount (Low to High)</option>
+            <option value="-amount">Amount (High to Low)</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Expense List */}
       <ul>
         {expenses.map((expense) => (
           <li key={expense.id}>
             {editMode === expense.id ? (
               <>
-                <input
-                  type="text"
+                {/* Category Dropdown for Editing */}
+                <select
                   value={editData.category}
                   onChange={(e) => setEditData({ ...editData, category: e.target.value })}
-                />
+                >
+                  {categories.map((cat) => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+
                 <input
                   type="number"
                   value={editData.amount}
@@ -72,7 +107,7 @@ const ExpenseList = () => {
               </>
             ) : (
               <>
-                {expense.date}: {expense.category} - ${expense.amount}
+                {expense.date}: <strong>{expense.category}</strong> - ${expense.amount}
                 <button onClick={() => handleEdit(expense)}>Edit</button>
                 <button onClick={() => handleDelete(expense.id)}>Delete</button>
               </>

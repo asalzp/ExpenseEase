@@ -4,6 +4,14 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 
 class Expense(models.Model):
+    CATEGORY_CHOICES = [
+        ('Food', 'Food'),
+        ('Transport', 'Transport'),
+        ('Entertainment', 'Entertainment'),
+        ('Bills', 'Bills'),
+        ('Shopping', 'Shopping'),
+        ('Other', 'Other'),
+    ]
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     category = models.CharField(max_length=50)
     amount = models.DecimalField(max_digits=10, decimal_places=2)

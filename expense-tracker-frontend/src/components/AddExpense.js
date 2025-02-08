@@ -9,6 +9,8 @@ const AddExpense = ({ onAdd }) => {
     description: "",
   });
 
+  const categories = ["Food", "Transport", "Entertainment", "Bills", "Shopping", "Other"];
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
@@ -36,14 +38,17 @@ const AddExpense = ({ onAdd }) => {
   return (
     <form onSubmit={handleSubmit}>
       <h2>Add Expense</h2>
-      <input
-        type="text"
-        name="category"
-        placeholder="Category"
-        value={formData.category}
-        onChange={handleChange}
-        required
-      />
+
+      {/* Category Dropdown */}
+      <select name="category" value={formData.category} onChange={handleChange} required>
+        <option value="">Select a Category</option>
+        {categories.map((cat) => (
+          <option key={cat} value={cat}>
+            {cat}
+          </option>
+        ))}
+      </select>
+
       <input
         type="number"
         name="amount"

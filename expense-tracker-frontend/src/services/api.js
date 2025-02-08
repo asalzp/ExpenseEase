@@ -49,13 +49,14 @@ API.interceptors.response.use(
 );
 
 // Fetch expenses
-export const getExpenses = async () => {
+export const getExpenses = async (params = '') => {
   try {
-    return await API.get("expenses/");
+    return await API.get(`expenses/?${params}`);
   } catch (error) {
     console.error("Error fetching expenses:", error);
   }
 };
+
 
 // Add expense
 export const addExpense = async (expense) => {
