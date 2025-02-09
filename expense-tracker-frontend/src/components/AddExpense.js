@@ -1,5 +1,16 @@
 import React, { useState } from "react";
 import { addExpense } from "../services/api";
+import {
+  Paper,
+  Typography,
+  TextField,
+  Button,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Box,
+} from "@mui/material";
 
 const AddExpense = ({ onAdd }) => {
   const [formData, setFormData] = useState({
@@ -36,42 +47,63 @@ const AddExpense = ({ onAdd }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h2>Add Expense</h2>
+    <Paper elevation={3} sx={{ p: 3, mb: 3 }}>
+      <Typography variant="h6" gutterBottom>
+        Add Expense
+      </Typography>
+      <form onSubmit={handleSubmit}>
+        {/* Category Dropdown */}
+        <FormControl fullWidth sx={{ mb: 2 }}>
+          <InputLabel>Category</InputLabel>
+          <Select name="category" value={formData.category} onChange={handleChange} required>
+            {categories.map((cat) => (
+              <MenuItem key={cat} value={cat}>
+                {cat}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
 
-      {/* Category Dropdown */}
-      <select name="category" value={formData.category} onChange={handleChange} required>
-        <option value="">Select a Category</option>
-        {categories.map((cat) => (
-          <option key={cat} value={cat}>
-            {cat}
-          </option>
-        ))}
-      </select>
+        {/* Amount & Date Fields */}
+        <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+          <TextField
+            fullWidth
+            type="number"
+            name="amount"
+            label="Amount"
+            value={formData.amount}
+            onChange={handleChange}
+            required
+          />
+          <TextField
+            fullWidth
+            type="date"
+            name="date"
+            value={formData.date}
+            onChange={handleChange}
+            required
+            InputLabelProps={{ shrink: true }}
+          />
+        </Box>
 
-      <input
-        type="number"
-        name="amount"
-        placeholder="Amount"
-        value={formData.amount}
-        onChange={handleChange}
-        required
-      />
-      <input
-        type="date"
-        name="date"
-        value={formData.date}
-        onChange={handleChange}
-        required
-      />
-      <textarea
-        name="description"
-        placeholder="Description"
-        value={formData.description}
-        onChange={handleChange}
-      ></textarea>
-      <button type="submit">Add Expense</button>
-    </form>
+        {/* Description */}
+        <TextField
+          fullWidth
+          multiline
+          rows={2}
+          name="description"
+          label="Description"
+          value={formData.description}
+          onChange={handleChange}
+          sx={{ mb: 2 }}
+        />
+
+        {/* Submit Button */}
+        <Button type="submit" variant="contained" color="primary" fullWidth>
+          Add Expense
+        </Button>
+      </form>
+    </Paper>
   );
 };
 

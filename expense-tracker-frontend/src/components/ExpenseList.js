@@ -3,6 +3,22 @@ import { getExpenses, updateExpense, deleteExpense } from "../services/api";
 import AddExpense from "./AddExpense";
 import { useNavigate } from "react-router-dom";
 import Navbar from "./Navbar";
+import {
+  Container,
+  Typography,
+  Paper,
+  Select,
+  MenuItem,
+  TextField,
+  Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Box,
+} from "@mui/material";
 
 const ExpenseList = () => {
   const [expenses, setExpenses] = useState([]);
@@ -18,12 +34,11 @@ const ExpenseList = () => {
     if (!token) {
       navigate("/login"); // Redirect if not logged in
     } else {
-      // Construct query params including filters and sort
       const urlParams = new URLSearchParams();
       if (filters.category) urlParams.append("category", filters.category);
       if (filters.date) urlParams.append("date", filters.date);
       if (filters.sort) urlParams.append("ordering", filters.sort);
-  
+
       getExpenses(urlParams.toString()).then((response) => setExpenses(response.data));
     }
   }, [navigate, filters]);
@@ -56,74 +71,118 @@ const ExpenseList = () => {
     }
   };
 
-  // Handle input changes for filters
   const handleFilterChange = (e) => {
     setFilters({ ...filters, [e.target.name]: e.target.value });
   };
 
   const handleGoToSummary = () => {
-    navigate("/summary");  // Redirect to summary page
+    navigate("/summary");
   };
 
-
   return (
-    <div>
+    <Container maxWidth="md">
       <Navbar />
-      <h1>Expense Tracker</h1>
-      <AddExpense onAdd={handleAddExpense} />
+      <Typography variant="h4" align="center" sx={{ mt: 3, mb: 3 }}>
+        Expense Tracker
+      </Typography>
+      
+      <Paper sx={{ p: 3, mb: 3 }}>
+        <AddExpense onAdd={handleAddExpense} />
 
-      {/* Filter and Sort Controls */}
-      <div>
-        <div>
-          <label>Sort By:</label>
-          <select name="sort" value={filters.sort} onChange={handleFilterChange}>
-            <option value="">Select Sorting Option</option>
-            <option value="date">Date (Oldest to Newest)</option>
-            <option value="-date">Date (Newest to Oldest)</option>
-            <option value="amount">Amount (Low to High)</option>
-            <option value="-amount">Amount (High to Low)</option>
-          </select>
-        </div>
-      </div>
+        {/* Filter & Sorting */}
+        <Box sx={{ display: "flex", gap: 2, mt: 3 }}>
+          <Select
+            fullWidth
+            name="sort"
+            value={filters.sort}
+            onChange={handleFilterChange}
+            displayEmpty
+          >
+            <MenuItem value="">Sort By</MenuItem>
+            <MenuItem value="date">Date (Oldest to Newest)</MenuItem>
+            <MenuItem value="-date">Date (Newest to Oldest)</MenuItem>
+            <MenuItem value="amount">Amount (Low to High)</MenuItem>
+            <MenuItem value="-amount">Amount (High to Low)</MenuItem>
+          </Select>
 
-      {/* Button to go to the Expense Summary page */}
-      <button onClick={handleGoToSummary}>Go to Expense Summary</button>
+          <Button variant="contained" color="primary" onClick={handleGoToSummary}>
+            Go to Summary
+          </Button>
+        </Box>
+      </Paper>
 
-      {/* Expense List */}
-      <ul>
-        {expenses.map((expense) => (
-          <li key={expense.id}>
-            {editMode === expense.id ? (
-              <>
-                {/* Category Dropdown for Editing */}
-                <select
-                  value={editData.category}
-                  onChange={(e) => setEditData({ ...editData, category: e.target.value })}
-                >
-                  {categories.map((cat) => (
-                    <option key={cat} value={cat}>{cat}</option>
-                  ))}
-                </select>
-
-                <input
-                  type="number"
-                  value={editData.amount}
-                  onChange={(e) => setEditData({ ...editData, amount: e.target.value })}
-                />
-                <button onClick={handleUpdate}>Save</button>
-                <button onClick={() => setEditMode(null)}>Cancel</button>
-              </>
-            ) : (
-              <>
-                {expense.date}: <strong>{expense.category}</strong> - ${expense.amount}
-                <button onClick={() => handleEdit(expense)}>Edit</button>
-                <button onClick={() => handleDelete(expense.id)}>Delete</button>
-              </>
-            )}
-          </li>
-        ))}
-      </ul>
-    </div>
+      {/* Expense List Table */}
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Date</TableCell>
+              <TableCell>Category</TableCell>
+              <TableCell>Amount</TableCell>
+              <TableCell>Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {expenses.map((expense) => (
+              <TableRow key={expense.id}>
+                {editMode === expense.id ? (
+                  <>
+                    <TableCell>
+                      <TextField
+                        type="date"
+                        value={editData.date}
+                        onChange={(e) => setEditData({ ...editData, date: e.target.value })}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Select
+                        value={editData.category}
+                        onChange={(e) => setEditData({ ...editData, category: e.target.value })}
+                      >
+                        {categories.map((cat) => (
+                          <MenuItem key={cat} value={cat}>
+                            {cat}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </TableCell>
+                    <TableCell>
+                      <TextField
+                        type="number"
+                        value={editData.amount}
+                        onChange={(e) => setEditData({ ...editData, amount: e.target.value })}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Button variant="contained" color="success" onClick={handleUpdate}>
+                        Save
+                      </Button>
+                      <Button variant="outlined" color="secondary" onClick={() => setEditMode(null)}>
+                        Cancel
+                      </Button>
+                    </TableCell>
+                  </>
+                ) : (
+                  <>
+                    <TableCell>{expense.date}</TableCell>
+                    <TableCell>{expense.category}</TableCell>
+                    <TableCell>${expense.amount}</TableCell>
+                    <TableCell>
+                      <Button variant="outlined" color="primary" onClick={() => handleEdit(expense)}>
+                        Edit
+                      </Button>
+                      <Button variant="contained" color="error" onClick={() => handleDelete(expense.id)}>
+                        Delete
+                      </Button>
+                    </TableCell>
+                  </>
+                )}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Container>
   );
 };
 

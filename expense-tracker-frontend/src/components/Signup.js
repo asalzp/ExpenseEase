@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../services/api";
+import { Container, TextField, Button, Typography, Paper, Box } from "@mui/material";
 
 const Signup = () => {
   const [username, setUsername] = useState("");
@@ -23,33 +24,56 @@ const Signup = () => {
   };
 
   return (
-    <div>
-      <h2>Sign Up</h2>
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      <form onSubmit={handleSignup}>
-        <input
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          required
-        />
-        <input
-          type="email"
-          placeholder="Email (optional)"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <button type="submit">Sign Up</button>
-      </form>
-    </div>
+    <Container maxWidth="xs">
+      <Paper elevation={3} sx={{ padding: 4, marginTop: 8 }}>
+        <Typography variant="h5" align="center" gutterBottom>
+          Sign Up
+        </Typography>
+        {error && (
+          <Typography color="error" variant="body2" sx={{ textAlign: "center", mb: 2 }}>
+            {error}
+          </Typography>
+        )}
+        <form onSubmit={handleSignup}>
+          <TextField
+            fullWidth
+            label="Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            margin="normal"
+            required
+          />
+          <TextField
+            fullWidth
+            label="Email (optional)"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            margin="normal"
+          />
+          <TextField
+            fullWidth
+            label="Password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            margin="normal"
+            required
+          />
+          <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
+            <Button type="submit" variant="contained" color="primary">
+              Sign Up
+            </Button>
+          </Box>
+        </form>
+        <Box sx={{ textAlign: "center", mt: 2 }}>
+          <Typography variant="body2">Already have an account?</Typography>
+          <Button onClick={() => navigate("/login")} variant="text">
+            Login
+          </Button>
+        </Box>
+      </Paper>
+    </Container>
   );
 };
 
