@@ -9,16 +9,23 @@ import {
   ListItemText,
   Divider,
   Box,
+  Button,
 } from "@mui/material";
+import { useNavigate } from "react-router-dom"; // Importing useNavigate
 
 const ExpenseSummary = () => {
   const [summary, setSummary] = useState({ total_spent: 0, category_breakdown: [] });
+  const navigate = useNavigate(); // useNavigate hook to navigate to another page
 
   useEffect(() => {
     getExpenseSummary()
       .then((response) => setSummary(response.data))
       .catch((error) => console.error("Error fetching summary:", error));
   }, []);
+
+  const goToSpendingTrends = () => {
+    navigate("/spending-trends"); // Navigate to the spending trends page
+  };
 
   return (
     <Card elevation={3} sx={{ maxWidth: 400, mx: "auto", mt: 4, p: 2 }}>
@@ -45,6 +52,13 @@ const ExpenseSummary = () => {
             </Box>
           ))}
         </List>
+
+        {/* Button to navigate to spending trends */}
+        <Box sx={{ mt: 2, textAlign: "center" }}>
+          <Button variant="contained" color="primary" onClick={goToSpendingTrends}>
+            View Spending Trends
+          </Button>
+        </Box>
       </CardContent>
     </Card>
   );

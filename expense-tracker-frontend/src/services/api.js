@@ -57,7 +57,6 @@ export const getExpenses = async (params = '') => {
   }
 };
 
-
 // Add expense
 export const addExpense = async (expense) => {
   try {
@@ -94,7 +93,6 @@ export const deleteExpense = async (id) => {
   }
 };
 
-
 // Fetch expense summary
 export const getExpenseSummary = async () => {
   try {
@@ -107,6 +105,28 @@ export const getExpenseSummary = async () => {
   }
 };
 
+// Fetch spending trends (monthly or weekly spending data)
+export const getSpendingTrends = async (period = 'month') => {
+  try {
+    return await API.get(`spending-trends/${period}/`);
+  } catch (error) {
+    console.error("Error fetching spending trends:", error);
+    if (error.response?.status === 401) {
+      window.location.href = "/login"; // Force redirect if unauthorized
+    }
+  }
+};
+
+export const getCategoryBreakdown = async (period) => {
+  try {
+    return await API.get(`category-breakdown/${period}/`);
+  } catch (error) {
+    console.error("Error fetching category breakdown:", error);
+    if (error.response?.status === 401) {
+      window.location.href = "/login"; // Force redirect if unauthorized
+    }
+  }
+};
 
 // Logout
 export const logout = () => {
@@ -114,6 +134,5 @@ export const logout = () => {
   localStorage.removeItem("refresh_token");
   window.location.href = "/login"; // Redirect to login page
 };
-
 
 export default API;

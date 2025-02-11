@@ -45,6 +45,8 @@ const AddExpense = ({ onAdd }) => {
       console.error("Error adding expense:", error);
     }
   };
+  
+  const today = new Date().toISOString().split("T")[0]
 
   return (
     <Paper elevation={3} sx={{ p: 3, mb: 3 }}>
@@ -83,6 +85,7 @@ const AddExpense = ({ onAdd }) => {
             onChange={handleChange}
             required
             InputLabelProps={{ shrink: true }}
+            inputProps={{ max: today }} // Prevents future dates
           />
         </Box>
 

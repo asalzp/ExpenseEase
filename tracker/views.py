@@ -11,6 +11,10 @@ from .models import Expense
 from .serializers import ExpenseSerializer
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
+from django.db.models.functions import TruncMonth, TruncWeek, TruncDay
+from datetime import timedelta
+from django.utils.timezone import now
+
 
 # User Registration View
 @api_view(['POST'])
@@ -30,6 +34,56 @@ def register_user(request):
     )
 
     return Response({"message": "User created successfully"}, status=status.HTTP_201_CREATED)
+
+@api_view(['GET'])
+def category_breakdown(request, period):
+    if period not in ['month', 'week']:
+        return Response({"error": "Invalid period. Choose 'month' or 'week'."}, status=400)
+
+    today = now().date()  # Get today's date
+
+    if period == 'month':
+        start_date = today.replace(day=1)  # First day of the current month
+        categories = Expense.objects.filter(date__gte=start_date) \
+            .values('category') \
+            .annotate(total=Sum('amount'))
+    elif period == 'week':
+        start_date = today - timedelta(days=today.weekday())  # Start of the current week (Monday)
+        categories = Expense.objects.filter(date__gte=start_date) \
+            .values('category') \
+            .annotate(total=Sum('amount'))
+
+    data = [{'category': item['category'], 'total': item['total']} for item in categories]
+    return Response({'category_breakdown': data})
+
+@api_view(['GET'])
+def get_spending_trends(request, period):
+    if period not in ['month', 'week']:
+        return Response({"error": "Invalid period. Choose 'month' or 'week'."}, status=400)
+
+    if period == 'month':
+        # Instead of grouping by full month, break down spending into weeks within the month
+        trends = Expense.objects.annotate(week=TruncWeek('date')) \
+            .values('week') \
+            .annotate(total=Sum('amount')) \
+            .order_by('week')
+    elif period == 'week':
+        # Group by day within the selected week
+        trends = Expense.objects.annotate(day=TruncDay('date')) \
+            .values('day') \
+            .annotate(total=Sum('amount')) \
+            .order_by('day')
+
+    data = [
+        {
+            'period': item['week'] if period == 'month' else item['day'],
+            'total': item['total']
+        }
+        for item in trends
+    ]
+    
+    return Response({'trends': data})
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
