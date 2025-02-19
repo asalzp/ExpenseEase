@@ -56,7 +56,6 @@ const SpendingTrendsChart = () => {
     // Fetch category breakdown for Pie Chart
     getCategoryBreakdown(timePeriod)
       .then(response => {
-        
         const data = response?.data?.category_breakdown || []; // Ensure valid data
         if (!Array.isArray(data) || data.length === 0) {
           console.warn("Empty or invalid category breakdown data.");

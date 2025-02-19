@@ -13,7 +13,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
 from django.db.models.functions import TruncMonth, TruncWeek, TruncDay
 from datetime import timedelta
-from django.utils.timezone import now
+from datetime import datetime
 
 
 # User Registration View
@@ -40,7 +40,7 @@ def category_breakdown(request, period):
     if period not in ['month', 'week']:
         return Response({"error": "Invalid period. Choose 'month' or 'week'."}, status=400)
 
-    today = now().date()  # Get today's date
+    today = datetime.now().date()  # Get today's date
 
     if period == 'month':
         start_date = today.replace(day=1)  # First day of the current month
@@ -57,7 +57,7 @@ def category_breakdown(request, period):
     return Response({'category_breakdown': data})
 
 @api_view(['GET'])
-def get_spending_trends(request, period):
+def spending_trends(request, period):
     if period not in ['month', 'week']:
         return Response({"error": "Invalid period. Choose 'month' or 'week'."}, status=400)
 

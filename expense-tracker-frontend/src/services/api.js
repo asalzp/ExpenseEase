@@ -106,9 +106,15 @@ export const getExpenseSummary = async () => {
 };
 
 // Fetch spending trends (monthly or weekly spending data)
-export const getSpendingTrends = async (period = 'month') => {
+export const getSpendingTrends = async (period = 'month', startDate) => {
   try {
-    return await API.get(`spending-trends/${period}/`);
+    // Construct the URL with the period and optionally the startDate
+    const url = period === 'week' && startDate 
+      ? `spending-trends/${period}/?start_date=${startDate}` 
+      : `spending-trends/${period}/`;
+    
+    // Make the API request
+    return await API.get(url);
   } catch (error) {
     console.error("Error fetching spending trends:", error);
     if (error.response?.status === 401) {
@@ -116,6 +122,7 @@ export const getSpendingTrends = async (period = 'month') => {
     }
   }
 };
+
 
 export const getCategoryBreakdown = async (period) => {
   try {
