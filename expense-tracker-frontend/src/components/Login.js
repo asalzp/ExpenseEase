@@ -7,22 +7,39 @@ import { makeStyles } from "@mui/styles";
 import { motion, AnimatePresence } from "framer-motion";
 
 const useStyles = makeStyles({
+
+  "@global": {
+    "html, body, #root": {
+      height: "100%",
+      margin: 0,
+      padding: 0,
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      overflow: "hidden",
+      backgroundColor: "#242840", // Ensures full background coverage
+    },
+  },
+
   container: {
     height: "100vh",
+    width: "100vw",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#242840",
+    overflow: "hidden"
   },
   gridContainer: {
-    width: "90%",
+    width: "100%",
     height: "90vh",
     maxWidth: "1100px",
-    boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+    boxShadow: "0px 4px 20px rgba(0, 0, 0, 1)",
     borderRadius: "10px",
     overflow: "hidden",
     display: "flex",
     flexDirection: "row",
-    backgroundColor: "white",
+    backgroundColor: "#424769",
   },
   leftPanel: {
     display: "flex",
@@ -36,6 +53,7 @@ const useStyles = makeStyles({
   },
   rightPanel: {
     backgroundColor: "#008080",
+    background: `url('/assets/money-login.jpg') no-repeat center center/cover`,
     color: "white",
     display: "flex",
     flexDirection: "column",
@@ -48,21 +66,28 @@ const useStyles = makeStyles({
   title: {
     fontWeight: "bold",
     marginBottom: "20px",
-    color: "#008080",
+    color: "white",
+    fontSize: "30px !important"
   },
   button: {
     marginTop: "20px !important",
-    backgroundColor: "#FFC107 !important",
-    color: "#008080 !important",
+    backgroundColor: "#f9b17a !important",
+    color: "#2d3250 !important",
     width: "200px",
-    borderRadius: "15px !important", 
+    borderRadius: "2px !important", 
+    boxShadow: "0 0 10px #f9b17a !important", // Adds glow effect
+    transition: "0.3s ease-in-out !important",
+    "&:hover": {
+      backgroundColor: "#f9b17a !important",
+      boxShadow: "0 0 20px #f9b17a !important", // Increases glow on hover
+    },
   },
   rightButton: {
     marginTop: "20px !important",
     color: "white !important",
     width: "200px",
     textAlign: "center",
-    borderRadius: "15px !important", 
+    borderRadius: "2px !important", 
     border: "2px solid white !important",
   },
   link: {
@@ -70,6 +95,19 @@ const useStyles = makeStyles({
     color: "#FFC107",
     cursor: "pointer",
   },
+  username: {
+    backgroundColor: "#676F8D",
+    borderRadius: "2px",
+    
+  },
+  password: {
+    backgroundColor: "#676F8D",
+    borderRadius: "2px"
+  },
+  email: {
+    backgroundColor: "#676F8D",
+    borderRadius: "2px"
+  }
 });
 
 const LoginSignup = () => {
@@ -111,43 +149,124 @@ const LoginSignup = () => {
           transition={{ duration: 0.5 }}
           style={{ width: "100%" }}
         >
+          
           <Grid
             container
             className={classes.gridContainer}
             style={{ flexDirection: isLogin ? "row" : "row-reverse" }}
           >
+            
             {/* Left Panel - Form */}
             <Grid item xs={12} md={6} className={classes.leftPanel} style={{display: "flex", flexDirection: "column", alignItems: "center"}}>
+              
               <Typography variant="h4" className={classes.title}>
-                {isLogin ? "Login" : "Sign Up"}
+                {isLogin ? "Log In" : "Sign Up"}
               </Typography>
               {error && <Typography color="error">{error}</Typography>}
               <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%", maxWidth: "350px" }}>
-                <TextField
+                <TextField className={classes.username}
+                  id="filled-required"
+                  variant="filled"
+                  color="white"
                   fullWidth
                   label="Username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  margin="normal"
+                  margin="dense"
                   required
+                  sx={{
+                    marginBottom: "-3px",
+                    "& .MuiFilledInput-root": {
+                      backgroundColor: "#676F8D", // Background color
+                      borderRadius: "5px",
+                      color: "white",
+                      "&:before": {
+                        borderBottom: "2px solid transparent", // Default border (hidden)
+                      },
+                      "&:hover:before": {
+                        borderBottom: "2px solid #f9b17a", // Border color on hover
+                      },
+                      "&.Mui-focused:before": {
+                        borderBottom: "2px solid #f9b17a !important", // Border color when clicked (focused)
+                      },
+                    },
+                    "& .MuiInputLabel-root": {
+                      color: "#B3B7C6", // Default label color
+                    },
+                    "& .MuiInputLabel-root.Mui-focused": {
+                      color: "#f9b17a", // Label color when focused (clicked)
+                    },
+                  }}
+                  
                 />
                 {!isLogin && (
-                  <TextField
+                  <TextField className={classes.email}
+                    id="filled-required"
+                    variant="filled"
                     fullWidth
+                    color="white"
                     label="Email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    margin="normal"
+                    margin="dense"
+                    sx={{
+                      marginBottom: "-3px",
+                      "& .MuiFilledInput-root": {
+                        backgroundColor: "#676F8D", // Background color
+                        borderRadius: "5px",
+                        color: "white",
+                        "&:before": {
+                          borderBottom: "2px solid transparent", // Default border (hidden)
+                        },
+                        "&:hover:before": {
+                          borderBottom: "2px solid #f9b17a", // Border color on hover
+                        },
+                        "&.Mui-focused:before": {
+                          borderBottom: "2px solid #f9b17a !important", // Border color when clicked (focused)
+                        },
+                      },
+                      "& .MuiInputLabel-root": {
+                        color: "#B3B7C6", // Default label color
+                      },
+                      "& .MuiInputLabel-root.Mui-focused": {
+                        color: "#f9b17a", // Label color when focused (clicked)
+                      },
+                    }}
                   />
                 )}
-                <TextField
+                <TextField className={classes.password}
+                  id="filled-required"
+                  variant="filled"
                   fullWidth
+                  color="white"
                   label="Password"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  margin="normal"
+                  margin="dense"
                   required
+                  sx={{
+                    "& .MuiFilledInput-root": {
+                      backgroundColor: "#676F8D", // Background color
+                      borderRadius: "5px",
+                      color: "white",
+                      "&:before": {
+                        borderBottom: "2px solid transparent", // Default border (hidden)
+                      },
+                      "&:hover:before": {
+                        borderBottom: "2px solid #f9b17a", // Border color on hover
+                      },
+                      "&.Mui-focused:before": {
+                        borderBottom: "2px solid #f9b17a !important", // Border color when clicked (focused)
+                      },
+                    },
+                    "& .MuiInputLabel-root": {
+                      color: "#B3B7C6", // Default label color
+                    },
+                    "& .MuiInputLabel-root.Mui-focused": {
+                      color: "#f9b17a", // Label color when focused (clicked)
+                    },
+                  }}
                 />
                 <Button type="submit" variant="contained" className={classes.button}>
                   {isLogin ? "Login" : "Sign Up"}
@@ -157,11 +276,24 @@ const LoginSignup = () => {
 
             {/* Right Panel - Message */}
             <Grid item xs={12} md={6} className={classes.rightPanel} style={{display: "flex", flexDirection: "column", alignItems: "center"}}>
-              <Typography variant="h4">{isLogin ? "Hello, Friend!" : "Welcome Back!"}</Typography>
+            <Typography
+              variant="h3"
+              sx={{
+                fontFamily: "'Changa', serif",
+                color: "white",
+                fontWeight: "bold",
+                textAlign: "center",
+                marginBottom: "10px",
+              }}
+            >
+              ExpenseEase
+            </Typography>
+
+              <Typography variant="h4" align="center">{isLogin ? "Don't have an Account?" : "Already Registered?"}</Typography>
               <Typography variant="body1" align="center">
                 {isLogin
-                  ? "Enter your details and start your journey with us."
-                  : "To keep connected with us, please login with your personal info."}
+                  ? " Enter your details and start your journey with us."
+                  : "To continue, please login with your personal info."}
               </Typography>
               <Button className={classes.rightButton} onClick={() => setIsLogin(!isLogin)}>
                 {isLogin ? "Sign Up" : "Login"}
