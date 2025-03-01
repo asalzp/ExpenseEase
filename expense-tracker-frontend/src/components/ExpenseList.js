@@ -48,6 +48,7 @@ const ExpenseList = () => {
   };
 
   const handleEdit = (expense) => {
+    console.log("clicked")
     setEditMode(expense.id);
     setEditData(expense);
   };
@@ -80,109 +81,243 @@ const ExpenseList = () => {
   };
 
   return (
-    <Container maxWidth="md">
-      <Navbar />
-      <Typography variant="h4" align="center" sx={{ mt: 3, mb: 3 }}>
-        Expense Tracker
-      </Typography>
-      
-      <Paper sx={{ p: 3, mb: 3 }}>
-        <AddExpense onAdd={handleAddExpense} />
+    <Box sx={{ bgcolor: "background.default", minHeight: "100vh", p: 3 }}>
+      <Container maxWidth="md">
+        <Navbar />
+        <Typography variant="h4" align="center" sx={{ color: "white", mt: 3, mb: 3 }}>
+          Expense Tracker
+        </Typography>
+        
+        {/* Add Expense Form */}
+        <Paper sx={{ p: 3, mb: 3, backgroundColor: "#424769", color: "white", borderRadius: "12px", overflow: "visible" }}>
+          <AddExpense onAdd={handleAddExpense} />
 
-        {/* Filter & Sorting */}
-        <Box sx={{ display: "flex", gap: 2, mt: 3 }}>
-          <Select
-            fullWidth
-            name="sort"
-            value={filters.sort}
-            onChange={handleFilterChange}
-            displayEmpty
-          >
-            <MenuItem value="">Sort By</MenuItem>
-            <MenuItem value="date">Date (Oldest to Newest)</MenuItem>
-            <MenuItem value="-date">Date (Newest to Oldest)</MenuItem>
-            <MenuItem value="amount">Amount (Low to High)</MenuItem>
-            <MenuItem value="-amount">Amount (High to Low)</MenuItem>
-          </Select>
+          {/* Filter & Sorting */}
+          <Box sx={{ display: "flex", gap: 2, mt: 3, alignItems: "center" }}>
+            <Select
+              fullWidth
+              name="sort"
+              value={filters.sort}
+              onChange={handleFilterChange}
+              displayEmpty
+              variant="filled"
+              sx={{
+                backgroundColor: "#676F8D",
+                color: "white",
+                borderRadius: "5px",
+                "& .MuiSelect-icon": { color: "white" },
+                "&:hover": { backgroundColor: "#5A617F" },
+                "&.Mui-focused": { backgroundColor: "#5A617F" },
+              }}
+              MenuProps={{
+                PaperProps: {
+                  sx: {
+                    backgroundColor: "#424769",
+                    color: "white",
+                  },
+                },
+              }}
+            >
+              <MenuItem value="" sx={{ color: "#f9b17a", fontWeight: "bold" }}>
+                Sort By
+              </MenuItem>
+              {["date", "-date", "amount", "-amount"].map((sortType) => (
+                <MenuItem
+                  key={sortType}
+                  value={sortType}
+                  sx={{
+                    color: "white",
+                    backgroundColor: "#424769",
+                    "&:hover": { backgroundColor: "#5A617F" },
+                  }}
+                >
+                  {sortType.includes("date") ? 
+                    (sortType === "date" ? "Date (Oldest to Newest)" : "Date (Newest to Oldest)")
+                    : (sortType === "amount" ? "Amount (Low to High)" : "Amount (High to Low)")
+                  }
+                </MenuItem>
+              ))}
+            </Select>
 
-          <Button variant="contained" color="primary" onClick={handleGoToSummary}>
-            Go to Summary
-          </Button>
-        </Box>
-      </Paper>
+            <Button
+              variant="contained"
+              sx={{
+                backgroundColor: "#f9b17a",
+                color: "#2d3250",
+                fontWeight: "bold",
+                borderRadius: "8px",
+                px: 3,
+                boxShadow: "0 0 10px #f9b17a",
+                "&:hover": { boxShadow: "0 0 20px #f9b17a" },
+              }}
+              onClick={handleGoToSummary}
+            >
+              Go to Summary
+            </Button>
+          </Box>
+        </Paper>
 
-      {/* Expense List Table */}
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Date</TableCell>
-              <TableCell>Category</TableCell>
-              <TableCell>Amount</TableCell>
-              <TableCell>Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {expenses.map((expense) => (
-              <TableRow key={expense.id}>
-                {editMode === expense.id ? (
-                  <>
-                    <TableCell>
-                      <TextField
-                        type="date"
-                        value={editData.date}
-                        onChange={(e) => setEditData({ ...editData, date: e.target.value })}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Select
-                        value={editData.category}
-                        onChange={(e) => setEditData({ ...editData, category: e.target.value })}
-                      >
-                        {categories.map((cat) => (
-                          <MenuItem key={cat} value={cat}>
-                            {cat}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </TableCell>
-                    <TableCell>
-                      <TextField
-                        type="number"
-                        value={editData.amount}
-                        onChange={(e) => setEditData({ ...editData, amount: e.target.value })}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Button variant="contained" color="success" onClick={handleUpdate}>
-                        Save
-                      </Button>
-                      <Button variant="outlined" color="secondary" onClick={() => setEditMode(null)}>
-                        Cancel
-                      </Button>
-                    </TableCell>
-                  </>
-                ) : (
-                  <>
-                    <TableCell>{expense.date}</TableCell>
-                    <TableCell>{expense.category}</TableCell>
-                    <TableCell>${expense.amount}</TableCell>
-                    <TableCell>
-                      <Button variant="outlined" color="primary" onClick={() => handleEdit(expense)}>
-                        Edit
-                      </Button>
-                      <Button variant="contained" color="error" onClick={() => handleDelete(expense.id)}>
-                        Delete
-                      </Button>
-                    </TableCell>
-                  </>
-                )}
+        {/* Expense List Table */}
+        <TableContainer
+          component={Paper}
+          sx={{
+            backgroundColor: "#424769",
+            color: "white",
+            borderRadius: "12px",
+            overflow: "hidden",
+          }}
+        >
+          <Table>
+            <TableHead>
+              <TableRow sx={{ backgroundColor: "#2d3250" }}>
+                {["Date", "Category", "Amount", "Actions"].map((header) => (
+                  <TableCell key={header} sx={{ color: "white", fontWeight: "bold", py: 1.5 }}>
+                    {header}
+                  </TableCell>
+                ))}
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    </Container>
+            </TableHead>
+            <TableBody>
+  {expenses.map((expense) => (
+    <TableRow
+      key={expense.id}
+      sx={{
+        backgroundColor: "#2d3250",
+        "&:hover": { backgroundColor: "#363b5a" },
+        transition: "0.2s ease-in-out",
+      }}
+    >
+      {editMode === expense.id ? (
+        // **Edit Mode - Show Inputs**
+        <>
+          <TableCell>
+            <TextField
+              type="date"
+              value={editData.date || ""}
+              onChange={(e) => setEditData({ ...editData, date: e.target.value })}
+              sx={{
+                backgroundColor: "#676F8D",
+                borderRadius: "5px",
+                "& .MuiInputBase-input": { color: "white" },
+              }}
+            />
+          </TableCell>
+          <TableCell>
+            <Select
+              value={editData.category || ""}
+              onChange={(e) => setEditData({ ...editData, category: e.target.value })}
+              sx={{
+                backgroundColor: "#676F8D",
+                color: "white",
+                borderRadius: "5px",
+              }}
+            >
+              {categories.map((cat) => (
+                <MenuItem key={cat} value={cat}>
+                  {cat}
+                </MenuItem>
+              ))}
+            </Select>
+          </TableCell>
+          <TableCell>
+            <TextField
+              type="number"
+              value={editData.amount || ""}
+              onChange={(e) => setEditData({ ...editData, amount: e.target.value })}
+              sx={{
+                backgroundColor: "#676F8D",
+                borderRadius: "5px",
+                "& .MuiInputBase-input": { color: "white" },
+              }}
+            />
+          </TableCell>
+          <TableCell sx={{ display: "flex", gap: 1, alignItems: "center", height: "100%" }}>
+            {/* Save Button */}
+            <Button
+              variant="contained"
+              sx={{
+                backgroundColor: "#f9b17a",
+                color: "#2d3250",
+                fontWeight: "bold",
+                borderRadius: "6px",
+                px: 2,
+                py: 1,
+                boxShadow: "0 0 10px #f9b17a",
+                "&:hover": {
+                  backgroundColor: "#f9b17a",
+                  boxShadow: "0 0 20px #f9b17a",
+                },
+              }}
+              onClick={handleUpdate}
+            >
+              Save
+            </Button>
+
+            {/* Cancel Button */}
+            <Button
+              variant="outlined"
+              sx={{
+                color: "#f9b17a",
+                borderColor: "#f9b17a",
+                fontWeight: "bold",
+                borderRadius: "6px",
+                px: 2,
+                py: 1,
+                "&:hover": { borderColor: "#d8955d", color: "#d8955d" },
+              }}
+              onClick={() => setEditMode(null)}
+            >
+              Cancel
+            </Button>
+          </TableCell>
+
+        </>
+      ) : (
+        // **Default Mode - Show Static Data**
+        <>
+          <TableCell sx={{ color: "white" }}>{expense.date}</TableCell>
+          <TableCell sx={{ color: "white" }}>{expense.category}</TableCell>
+          <TableCell sx={{ color: "#f9b17a", fontWeight: "bold" }}>
+            ${Number(expense.amount).toFixed(2)}
+          </TableCell>
+          <TableCell sx={{ display: "flex", gap: 1 }}>
+            <Button
+              variant="outlined"
+              sx={{
+                color: "#f9b17a",
+                borderColor: "#f9b17a",
+                borderRadius: "6px",
+                fontWeight: "bold",
+                "&:hover": { borderColor: "#d8955d", color: "#d8955d" },
+              }}
+              onClick={() => handleEdit(expense)}
+            >
+              Edit
+            </Button>
+            <Button
+              variant="contained"
+              sx={{
+                backgroundColor: "#ae7b55",
+                color: "white",
+                fontWeight: "bold",
+                borderRadius: "6px",
+                "&:hover": { backgroundColor: "#7b0000" },
+              }}
+              onClick={() => handleDelete(expense.id)}
+            >
+              Delete
+            </Button>
+          </TableCell>
+        </>
+      )}
+    </TableRow>
+  ))}
+</TableBody>
+
+          </Table>
+        </TableContainer>
+      </Container>
+    </Box>
   );
 };
 

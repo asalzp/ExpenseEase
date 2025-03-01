@@ -13,13 +13,10 @@ const useStyles = makeStyles({
       height: "100%",
       margin: 0,
       padding: 0,
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      overflow: "hidden",
-      backgroundColor: "#242840", // Ensures full background coverage
+      backgroundColor: "#242840", // Keeps the dark background
     },
   },
+
 
   container: {
     height: "100vh",
@@ -28,7 +25,6 @@ const useStyles = makeStyles({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#242840",
-    overflow: "hidden"
   },
   gridContainer: {
     width: "100%",
@@ -177,7 +173,7 @@ const LoginSignup = () => {
                   sx={{
                     marginBottom: "-3px",
                     "& .MuiFilledInput-root": {
-                      backgroundColor: "#676F8D", // Background color
+                      backgroundColor: "#676F8D !important", // Background color
                       borderRadius: "5px",
                       color: "white",
                       "&:before": {

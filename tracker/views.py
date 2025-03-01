@@ -41,20 +41,41 @@ def category_breakdown(request, period):
         return Response({"error": "Invalid period. Choose 'month' or 'week'."}, status=400)
 
     today = datetime.now().date()  # Get today's date
+    data = []  # Initialize empty data list
 
-    if period == 'month':
-        start_date = today.replace(day=1)  # First day of the current month
-        categories = Expense.objects.filter(date__gte=start_date) \
-            .values('category') \
-            .annotate(total=Sum('amount'))
-    elif period == 'week':
-        start_date = today - timedelta(days=today.weekday())  # Start of the current week (Monday)
-        categories = Expense.objects.filter(date__gte=start_date) \
-            .values('category') \
-            .annotate(total=Sum('amount'))
+    # Function to get start date for a given period
+    def get_start_date(period, current=True):
+        if period == 'month':
+            if current:
+                return today.replace(day=1)  # First day of the current month
+            else:
+                first_day_current_month = today.replace(day=1)
+                return (first_day_current_month - timedelta(days=1)).replace(day=1)  # First day of previous month
+        elif period == 'week':
+            if current:
+                return today - timedelta(days=today.weekday())  # Start of current week (Monday)
+            else:
+                return today - timedelta(days=today.weekday() + 7)  # Start of previous week
 
+    # 1️⃣ **Check the current period**
+    start_date = get_start_date(period, current=True)
+    expenses = Expense.objects.filter(date__gte=start_date)
+
+    if not expenses.exists():
+        # 2️⃣ **If no data, check the previous period**
+        start_date = get_start_date(period, current=False)
+        expenses = Expense.objects.filter(date__gte=start_date)
+
+        if not expenses.exists():
+            return Response({'category_breakdown': [], 'message': "No expenses found for the current or previous period."})
+
+    # 3️⃣ **Aggregate category totals**
+    categories = expenses.values('category').annotate(total=Sum('amount'))
+
+    # 4️⃣ **Prepare the response data**
     data = [{'category': item['category'], 'total': item['total']} for item in categories]
-    return Response({'category_breakdown': data})
+
+    return Response({'category_breakdown': data, 'start_date': str(start_date)})
 
 @api_view(['GET'])
 def spending_trends(request, period):
