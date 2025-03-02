@@ -192,12 +192,16 @@ class ExpenseDetail(APIView):
     def delete(self, request, expense_id):
         """Delete an expense"""
         expense = self.get_object(expense_id, request.user)
+        
         if not expense:
+            print(f"Expense with ID {expense_id} not found.")
             return Response({"error": "Expense not found"}, status=status.HTTP_404_NOT_FOUND)
 
+        print(f"Deleting expense with ID {expense_id}")
         expense.delete()
-        return Response({"message": "Expense deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+        print(f"Expense {expense_id} deleted successfully")
 
+        return Response({"message": "Expense deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
 
 # Token Views
 class MyTokenObtainPairView(TokenObtainPairView):

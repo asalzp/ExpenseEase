@@ -85,20 +85,73 @@ const SpendingTrendsChart = () => {
     >
       {/* Time Period Selector */}
       <FormControl sx={{ mb: 4, width: '200px' }}>
-        <InputLabel sx={{ color: "white" }}>Time Period</InputLabel>
-        <Select
+      <InputLabel
+        sx={{
+          color: "#B3B7C6", // Default label color (light gray)
+          "&.Mui-focused": { color: "#f9b17a" }, // Changes label color when focused (mustard yellow)
+        }}
+      >
+        Time Period
+      </InputLabel>
+          <Select
           value={timePeriod}
           onChange={(e) => setTimePeriod(e.target.value)}
+          variant="filled"
+          color="white"
           sx={{
             backgroundColor: "#676F8D",
             color: "white",
             borderRadius: "5px",
-            "& .MuiSelect-icon": { color: "white" },
+            display: "flex",
+            alignItems: "center", // Ensures text is vertically centered
+            "& .MuiSelect-select": {
+              display: "flex",
+              alignItems: "center", // Centers text inside the select box
+              padding: "10px",
+            },
+            "& .MuiSelect-icon": { color: "white" }, // Ensures dropdown icon is white
+            "&:hover": {
+              backgroundColor: "#5A617F",
+            },
+            "&.Mui-focused": {
+              backgroundColor: "#5A617F",
+            },
+          }}
+          MenuProps={{
+            PaperProps: {
+              sx: {
+                backgroundColor: "#424769", // Background color of dropdown menu
+                color: "white", // Text color of menu items
+              },
+            },
           }}
         >
-          <MenuItem value="month">Month</MenuItem>
-          <MenuItem value="week">Week</MenuItem>
+          <MenuItem
+            value="month"
+            sx={{
+              color: "white", // Text color
+              backgroundColor: "#424769", // Background color
+              "&:hover": {
+                backgroundColor: "#5A617F", // Hover effect
+              },
+            }}
+          >
+            Month
+          </MenuItem>
+          <MenuItem
+            value="week"
+            sx={{
+              color: "white", // Text color
+              backgroundColor: "#424769", // Background color
+              "&:hover": {
+                backgroundColor: "#5A617F", // Hover effect
+              },
+            }}
+          >
+            Week
+          </MenuItem>
         </Select>
+
       </FormControl>
 
       {/* Line Chart */}
