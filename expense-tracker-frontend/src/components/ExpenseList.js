@@ -3,6 +3,9 @@ import { getExpenses, updateExpense, deleteExpense } from "../services/api";
 import AddExpense from "./AddExpense";
 import { useNavigate } from "react-router-dom";
 import Navbar from "./Navbar";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import dayjs from "dayjs";
 import {
   Container,
   Typography,
@@ -91,7 +94,7 @@ const ExpenseList = () => {
         </Typography>
         
         {/* Add Expense Form */}
-        <Paper sx={{ p: 3, mb: 3, backgroundColor: "#424769", color: "white", borderRadius: "12px", overflow: "visible" }}>
+        <Paper sx={{ p: 3, mb: 3, backgroundColor: "#424769", color: "white", borderRadius: "5px", overflow: "visible" }}>
           <AddExpense onAdd={handleAddExpense} />
 
           {/* Filter & Sorting */}
@@ -115,7 +118,7 @@ const ExpenseList = () => {
               sx={{
                 backgroundColor: "#676F8D",
                 color: "white",
-                borderRadius: "5px",
+                borderRadius: "2px",
                 "& .MuiSelect-icon": { color: "white" }, // Ensures dropdown icon is white
                 "&:hover": {
                   backgroundColor: "#5A617F",
@@ -172,10 +175,11 @@ const ExpenseList = () => {
             <Button
               variant="contained"
               sx={{
+                marginBottom:"1rem",
                 backgroundColor: "#f9b17a",
                 color: "#2d3250",
                 fontWeight: "bold",
-                borderRadius: "8px",
+                borderRadius: "2px",
                 px: 3,
                 boxShadow: "0 0 10px #f9b17a",
                 "&:hover": { boxShadow: "0 0 20px #f9b17a" },
@@ -193,7 +197,7 @@ const ExpenseList = () => {
             sx={{
               backgroundColor: "#424769",
               color: "white",
-              borderRadius: "12px",
+              borderRadius: "5px",
               overflow: "hidden",
             }}
           >
@@ -212,7 +216,7 @@ const ExpenseList = () => {
                   <TableRow
                     key={expense.id}
                     sx={{
-                      backgroundColor: "#2d3250",
+                      backgroundColor: "#424769",
                       "&:hover": { backgroundColor: "#363b5a" },
                       transition: "0.2s ease-in-out",
                     }}
@@ -352,12 +356,13 @@ const ExpenseList = () => {
                     ) : (
                       // **Default Mode - Show Static Data**
                       <>
-                        <TableCell sx={{ color: "white" }}>{expense.date}</TableCell>
+                        <TableCell sx={{ color: "white" }}>{dayjs(expense.date).format("MMMM D, YYYY")}</TableCell>
                         <TableCell sx={{ color: "white" }}>{expense.category}</TableCell>
                         <TableCell sx={{ color: "#f9b17a", fontWeight: "bold" }}>
                           ${Number(expense.amount).toFixed(2)}
                         </TableCell>
                         <TableCell sx={{ display: "flex", gap: 1 }}>
+                          {/* Edit (Pen) Button */}
                           <Button
                             variant="outlined"
                             sx={{
@@ -369,12 +374,14 @@ const ExpenseList = () => {
                             }}
                             onClick={() => handleEdit(expense)}
                           >
-                            Edit
+                            <EditIcon /> {/* Material-UI Pen Icon */}
                           </Button>
+
+                          {/* Delete (Trash Can) Button */}
                           <Button
                             variant="contained"
                             sx={{
-                              backgroundColor: "#ae7b55",
+                              backgroundColor: "#f9b17a",
                               color: "white",
                               fontWeight: "bold",
                               borderRadius: "6px",
@@ -382,7 +389,7 @@ const ExpenseList = () => {
                             }}
                             onClick={() => handleDelete(expense.id)}
                           >
-                            Delete
+                            <DeleteIcon /> {/* Material-UI Trash Can Icon */}
                           </Button>
                         </TableCell>
                       </>

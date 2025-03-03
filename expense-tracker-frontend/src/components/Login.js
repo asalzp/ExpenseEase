@@ -180,7 +180,7 @@ const LoginSignup = () => {
                         borderBottom: "2px solid transparent", // Default border (hidden)
                       },
                       "&:hover:before": {
-                        borderBottom: "2px solid #f9b17a", // Border color on hover
+                        borderBottom: "2px solid #f9b17a !important", // Border color on hover
                       },
                       "&.Mui-focused:before": {
                         borderBottom: "2px solid #f9b17a !important", // Border color when clicked (focused)
