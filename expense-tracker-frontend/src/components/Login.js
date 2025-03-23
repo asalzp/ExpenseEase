@@ -15,6 +15,10 @@ const useStyles = makeStyles({
       padding: 0,
       backgroundColor: "#242840", // Keeps the dark background
     },
+    ".MuiFilledInput-root": {
+      backgroundColor: "#676F8D !important",
+      // Other styling as needed
+    }
   },
 
 
@@ -70,7 +74,7 @@ const useStyles = makeStyles({
     backgroundColor: "#f9b17a !important",
     color: "#2d3250 !important",
     width: "200px",
-    borderRadius: "2px !important", 
+    borderRadius: "2px !important",
     boxShadow: "0 0 10px #f9b17a !important", // Adds glow effect
     transition: "0.3s ease-in-out !important",
     "&:hover": {
@@ -83,7 +87,7 @@ const useStyles = makeStyles({
     color: "white !important",
     width: "200px",
     textAlign: "center",
-    borderRadius: "2px !important", 
+    borderRadius: "2px !important",
     border: "2px solid white !important",
   },
   link: {
@@ -94,7 +98,7 @@ const useStyles = makeStyles({
   username: {
     backgroundColor: "#676F8D",
     borderRadius: "2px",
-    
+
   },
   password: {
     backgroundColor: "#676F8D",
@@ -145,16 +149,16 @@ const LoginSignup = () => {
           transition={{ duration: 0.5 }}
           style={{ width: "100%" }}
         >
-          
+
           <Grid
             container
             className={classes.gridContainer}
             style={{ flexDirection: isLogin ? "row" : "row-reverse" }}
           >
-            
+
             {/* Left Panel - Form */}
-            <Grid item xs={12} md={6} className={classes.leftPanel} style={{display: "flex", flexDirection: "column", alignItems: "center"}}>
-              
+            <Grid item xs={12} md={6} className={classes.leftPanel} style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+
               <Typography variant="h4" className={classes.title}>
                 {isLogin ? "Log In" : "Sign Up"}
               </Typography>
@@ -170,12 +174,24 @@ const LoginSignup = () => {
                   onChange={(e) => setUsername(e.target.value)}
                   margin="dense"
                   required
+                  InputProps={{
+                    style: {
+                      backgroundColor: "#676F8D !important",
+                      color: "white",
+                      borderRadius: "5px"
+                    },
+                  }}
+                  // Replace your TextField sx properties with this more comprehensive approach
                   sx={{
                     marginBottom: "-3px",
                     "& .MuiFilledInput-root": {
-                      backgroundColor: "#676F8D !important", // Background color
+                      backgroundColor: "#676F8D !important", // Added !important to ensure it applies on initial load
                       borderRadius: "5px",
                       color: "white",
+                      // Force the initial state to have the correct background
+                      "&.Mui-focused, &:hover, &": {
+                        backgroundColor: "#676F8D !important",
+                      },
                       "&:before": {
                         borderBottom: "2px solid transparent", // Default border (hidden)
                       },
@@ -193,7 +209,7 @@ const LoginSignup = () => {
                       color: "#f9b17a", // Label color when focused (clicked)
                     },
                   }}
-                  
+
                 />
                 {!isLogin && (
                   <TextField className={classes.email}
@@ -271,19 +287,19 @@ const LoginSignup = () => {
             </Grid>
 
             {/* Right Panel - Message */}
-            <Grid item xs={12} md={6} className={classes.rightPanel} style={{display: "flex", flexDirection: "column", alignItems: "center"}}>
-            <Typography
-              variant="h3"
-              sx={{
-                fontFamily: "'Changa', serif",
-                color: "white",
-                fontWeight: "bold",
-                textAlign: "center",
-                marginBottom: "10px",
-              }}
-            >
-              ExpenseEase
-            </Typography>
+            <Grid item xs={12} md={6} className={classes.rightPanel} style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+              <Typography
+                variant="h3"
+                sx={{
+                  fontFamily: "'Changa', serif",
+                  color: "white",
+                  fontWeight: "bold",
+                  textAlign: "center",
+                  marginBottom: "10px",
+                }}
+              >
+                ExpenseEase
+              </Typography>
 
               <Typography variant="h4" align="center">{isLogin ? "Don't have an Account?" : "Already Registered?"}</Typography>
               <Typography variant="body1" align="center">

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Line, Pie } from 'react-chartjs-2';
 import { getSpendingTrends, getCategoryBreakdown } from '../services/api';
-import { Box, Typography, Paper, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
+import { Box, Typography, Paper, Select, MenuItem, FormControl, InputLabel, Grid } from '@mui/material';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, ArcElement, Title, Tooltip, Legend } from 'chart.js';
 import randomColor from 'randomcolor';
 import dayjs from 'dayjs';
@@ -22,12 +22,62 @@ const SpendingTrendsChart = () => {
   const [chartData, setChartData] = useState({ labels: [], datasets: [] });
   const [pieData, setPieData] = useState({ labels: [], datasets: [] });
   const [timePeriod, setTimePeriod] = useState('month'); // Default to 'month'
-
+  
+  // State for month selection
+  const [selectedMonth, setSelectedMonth] = useState('');
+  const [selectedMonthObj, setSelectedMonthObj] = useState(null);
+  
+  // Generate available months (up to current month)
+  const generateMonthOptions = () => {
+    const options = [];
+    const startDate = dayjs().subtract(12, 'month'); // Start from 12 months ago
+    const today = dayjs();
+    
+    let current = startDate;
+    while (current.isBefore(today) || current.isSame(today, 'month')) {
+      options.push({
+        value: current.format('YYYY-MM'),
+        label: current.format('MMMM YYYY'),
+        month: current.month() + 1,
+        year: current.year()
+      });
+      current = current.add(1, 'month');
+    }
+    
+    return options;
+  };
+  
+  const monthOptions = generateMonthOptions();
+  
+  // Initialize with current month
   useEffect(() => {
-    getSpendingTrends(timePeriod)
+    const currentMonth = dayjs().format('YYYY-MM');
+    setSelectedMonth(currentMonth);
+    
+    const currentMonthObj = monthOptions.find(m => m.value === currentMonth);
+    setSelectedMonthObj(currentMonthObj);
+  }, []);
+  
+  // Fetch data when period or month changes
+  useEffect(() => {
+    // Only fetch data if selectedMonthObj is available
+    if (!selectedMonthObj) return;
+    
+    const { month, year } = selectedMonthObj;
+    
+    console.log(`Fetching data for ${month}/${year} with period ${timePeriod}`);
+    
+    // Fetch spending trends
+    getSpendingTrends(timePeriod, '', month, year)
       .then(response => {
+        if (!response || !response.data) {
+          console.warn("No response or data from API");
+          setChartData({ labels: [], datasets: [] });
+          return;
+        }
+        
         const data = response.data.trends;
-
+        
         if (data && Array.isArray(data)) {
           setChartData({
             labels: data.map(item => dayjs(item.period).format(timePeriod === 'month' ? 'MMM DD' : 'DD MMM')),
@@ -44,18 +94,31 @@ const SpendingTrendsChart = () => {
           });
         } else {
           console.error("Invalid data format:", data);
+          setChartData({ labels: [], datasets: [] });
         }
       })
-      .catch(error => console.error("Error fetching trends:", error));
-
-    getCategoryBreakdown(timePeriod)
+      .catch(error => {
+        console.error("Error fetching trends:", error);
+        setChartData({ labels: [], datasets: [] });
+      });
+    
+    // Fetch category breakdown
+    getCategoryBreakdown(timePeriod, '', month, year)
       .then(response => {
-        const data = response?.data?.category_breakdown || [];
-        if (!Array.isArray(data) || data.length === 0) {
-          console.warn("Empty or invalid category breakdown data.");
+        if (!response || !response.data) {
+          console.warn("No response or data from API");
+          setPieData({ labels: [], datasets: [] });
           return;
         }
-
+        
+        const data = response?.data?.category_breakdown || [];
+        
+        if (!Array.isArray(data) || data.length === 0) {
+          console.warn("Empty or invalid category breakdown data.");
+          setPieData({ labels: [], datasets: [] });
+          return;
+        }
+        
         const colors = randomColor({ count: data.length, luminosity: "bright" });
         setPieData({
           labels: data.map(item => item.category),
@@ -68,9 +131,21 @@ const SpendingTrendsChart = () => {
           ]
         });
       })
-      .catch(error => console.error("Error fetching category breakdown:", error));
-
-  }, [timePeriod]);
+      .catch(error => {
+        console.error("Error fetching category breakdown:", error);
+        setPieData({ labels: [], datasets: [] });
+      });
+      
+  }, [timePeriod, selectedMonthObj]);
+  
+  // Handle month selection change
+  const handleMonthChange = (event) => {
+    const newSelectedMonth = event.target.value;
+    setSelectedMonth(newSelectedMonth);
+    
+    const newMonthObj = monthOptions.find(m => m.value === newSelectedMonth);
+    setSelectedMonthObj(newMonthObj);
+  };
 
   return (
     <Box
@@ -83,76 +158,164 @@ const SpendingTrendsChart = () => {
         p: 4,
       }}
     >
-      {/* Time Period Selector */}
-      <FormControl sx={{ mb: 4, width: '200px' }}>
-      <InputLabel
-        sx={{
-          color: "#B3B7C6", // Default label color (light gray)
-          "&.Mui-focused": { color: "#f9b17a" }, // Changes label color when focused (mustard yellow)
-        }}
-      >
-        Time Period
-      </InputLabel>
-          <Select
-          value={timePeriod}
-          onChange={(e) => setTimePeriod(e.target.value)}
-          variant="filled"
-          color="white"
-          sx={{
-            backgroundColor: "#676F8D",
-            color: "white",
-            borderRadius: "5px",
-            display: "flex",
-            alignItems: "center", // Ensures text is vertically centered
-            "& .MuiSelect-select": {
-              display: "flex",
-              alignItems: "center", // Centers text inside the select box
-              padding: "10px",
-            },
-            "& .MuiSelect-icon": { color: "white" }, // Ensures dropdown icon is white
-            "&:hover": {
-              backgroundColor: "#5A617F",
-            },
-            "&.Mui-focused": {
-              backgroundColor: "#5A617F",
-            },
-          }}
-          MenuProps={{
-            PaperProps: {
-              sx: {
-                backgroundColor: "#424769", // Background color of dropdown menu
-                color: "white", // Text color of menu items
+      {/* Selectors Row */}
+      <Grid container spacing={2} sx={{ mb: 4, maxWidth: 800, width: '100%' }}>
+        {/* Time Period Selector */}
+        <Grid item xs={12} sm={6}>
+          <FormControl fullWidth>
+            <InputLabel
+              sx={{
+                color: "#B3B7C6",
+                "&.Mui-focused": { color: "#f9b17a" },
+              }}
+            >
+              Time Period
+            </InputLabel>
+            <Select
+              value={timePeriod}
+              onChange={(e) => setTimePeriod(e.target.value)}
+              variant="filled"
+              color='white'
+              sx={{
+                backgroundColor: "#676F8D",
+                color: "white",
+                borderRadius: "5px",
+                display: "flex",
+                alignItems: "center",
+                "& .MuiSelect-select": {
+                  display: "flex",
+                  alignItems: "center",
+                  padding: "10px",
+                },
+                "& .MuiSelect-icon": { color: "white" },
+                "&:hover": {
+                  backgroundColor: "#5A617F",
+                },
+                "&.Mui-focused": {
+                  backgroundColor: "#5A617F",
+                },
+                "&:before": {
+                borderBottom: "2px solid transparent", // Default hidden border
               },
-            },
-          }}
-        >
-          <MenuItem
-            value="month"
-            sx={{
-              color: "white", // Text color
-              backgroundColor: "#424769", // Background color
-              "&:hover": {
-                backgroundColor: "#5A617F", // Hover effect
+              "&:hover:before": {
+                borderBottom: "2px solid #f9b17a !important", // Border color on hover
               },
-            }}
-          >
-            Month
-          </MenuItem>
-          <MenuItem
-            value="week"
-            sx={{
-              color: "white", // Text color
-              backgroundColor: "#424769", // Background color
-              "&:hover": {
-                backgroundColor: "#5A617F", // Hover effect
+              "&.Mui-focused:before": {
+                borderBottom: "2px solid #f9b17a !important", // Border color when focused
               },
-            }}
-          >
-            Week
-          </MenuItem>
-        </Select>
-
-      </FormControl>
+              "& .MuiSelect-icon": { color: "white" },
+              }}
+              MenuProps={{
+                PaperProps: {
+                  sx: {
+                    backgroundColor: "#424769",
+                    color: "white",
+                  },
+                },
+              }}
+            >
+              <MenuItem
+                value="month"
+                sx={{
+                  color: "white",
+                  backgroundColor: "#424769",
+                  "&:hover": {
+                    backgroundColor: "#5A617F",
+                  },
+                }}
+              >
+                Month
+              </MenuItem>
+              <MenuItem
+                value="week"
+                sx={{
+                  color: "white",
+                  backgroundColor: "#424769",
+                  "&:hover": {
+                    backgroundColor: "#5A617F",
+                  },
+                }}
+              >
+                Week
+              </MenuItem>
+            </Select>
+          </FormControl>
+        </Grid>
+        
+        {/* Month Selector */}
+        <Grid item xs={12} sm={6}>
+          <FormControl fullWidth>
+            <InputLabel
+              sx={{
+                color: "#B3B7C6",
+                "&.Mui-focused": { color: "#f9b17a" },
+              }}
+            >
+              Select Month
+            </InputLabel>
+            <Select
+              value={selectedMonth}
+              onChange={handleMonthChange}
+              variant="filled"
+              color='white'
+              sx={{
+                backgroundColor: "#676F8D !important",
+                color: "white",
+                borderRadius: "5px",
+                display: "flex",
+                alignItems: "center",
+                "& .MuiSelect-select": {
+                  display: "flex",
+                  alignItems: "center",
+                  padding: "10px",
+                },
+                "& .MuiSelect-icon": { color: "white" },
+                "&:hover": {
+                  backgroundColor: "#5A617F",
+                },
+                "&.Mui-focused": {
+                  backgroundColor: "#5A617F",
+                },
+                "&:before": {
+                borderBottom: "2px solid transparent", // Default hidden border
+              },
+              "&:hover:before": {
+                borderBottom: "2px solid #f9b17a !important", // Border color on hover
+              },
+              "&.Mui-focused:before": {
+                borderBottom: "2px solid #f9b17a !important", // Border color when focused
+              },
+              "& .MuiSelect-icon": { color: "white" },
+              }}
+              MenuProps={{
+                PaperProps: {
+                  sx: {
+                    backgroundColor: "#424769",
+                    color: "white",
+                    maxHeight: 300,
+                  },
+                },
+              }}
+            >
+              {monthOptions.map((option) => (
+                <MenuItem
+                  key={option.value}
+                  value={option.value}
+                  sx={{
+                    color: "white",
+                    backgroundColor: "#424769",
+                    "&:hover": {
+                      backgroundColor: "#5A617F",
+                    },
+                  }}
+                >
+                  {option.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Grid>
+      </Grid>
 
       {/* Line Chart */}
       <Paper
@@ -167,10 +330,44 @@ const SpendingTrendsChart = () => {
         }}
       >
         <Typography variant="h5" sx={{ color: "white", fontWeight: "bold", mb: 2 }}>
-          Spending Trends ({timePeriod.charAt(0).toUpperCase() + timePeriod.slice(1)})
+          Spending Trends {selectedMonthObj ? `(${selectedMonthObj.label})` : ''}
         </Typography>
         <Box sx={{ width: '100%', height: 400 }}>
-          <Line data={chartData} />
+          {chartData.labels && chartData.labels.length > 0 ? (
+            <Line data={chartData} options={{
+              scales: {
+                y: {
+                  grid: {
+                    color: 'rgba(255, 255, 255, 0.1)',
+                  },
+                  ticks: {
+                    color: '#B3B7C6'
+                  }
+                },
+                x: {
+                  grid: {
+                    color: 'rgba(255, 255, 255, 0.1)',
+                  },
+                  ticks: {
+                    color: '#B3B7C6'
+                  }
+                }
+              },
+              plugins: {
+                legend: {
+                  labels: {
+                    color: '#B3B7C6'
+                  }
+                }
+              }
+            }} />
+          ) : (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+              <Typography sx={{ textAlign: 'center', color: '#B3B7C6' }}>
+                No data available for this period
+              </Typography>
+            </Box>
+          )}
         </Box>
       </Paper>
 
@@ -186,10 +383,31 @@ const SpendingTrendsChart = () => {
         }}
       >
         <Typography variant="h5" sx={{ color: "white", fontWeight: "bold", mb: 2 }}>
-          Category Breakdown
+          Category Breakdown {selectedMonthObj ? `(${selectedMonthObj.label})` : ''}
         </Typography>
         <Box sx={{ width: '100%', height: 400 }}>
-          <Pie data={pieData} />
+          {pieData.labels && pieData.labels.length > 0 ? (
+            <Pie data={pieData} options={{
+              plugins: {
+                legend: {
+                  position: 'right',
+                  labels: {
+                    color: '#B3B7C6',
+                    padding: 20,
+                    font: {
+                      size: 12
+                    }
+                  }
+                }
+              }
+            }} />
+          ) : (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+              <Typography sx={{ textAlign: 'center', color: '#B3B7C6' }}>
+                No data available for this period
+              </Typography>
+            </Box>
+          )}
         </Box>
       </Paper>
     </Box>

@@ -106,31 +106,66 @@ export const getExpenseSummary = async () => {
 };
 
 // Fetch spending trends (monthly or weekly spending data)
-export const getSpendingTrends = async (period = 'month', startDate) => {
+export const getSpendingTrends = async (period = 'month', startDate = '', month = '', year = '') => {
   try {
-    // Construct the URL with the period and optionally the startDate
-    const url = period === 'week' && startDate 
-      ? `spending-trends/${period}/?start_date=${startDate}` 
-      : `spending-trends/${period}/`;
+    let url = `spending-trends/${period}/`;
+    const params = new URLSearchParams();
     
-    // Make the API request
+    // Add start_date if provided
+    if (startDate && period === 'month') {
+      params.append('start_date', startDate);
+    }
+    
+    // Add month and year if both are provided
+    if (month && year) {
+      params.append('month', month);
+      params.append('year', year);
+    }
+    
+    // Append params to URL if any exist
+    const queryString = params.toString();
+    if (queryString) {
+      url += `?${queryString}`;
+    }
+
+    // Make API request
     return await API.get(url);
   } catch (error) {
     console.error("Error fetching spending trends:", error);
     if (error.response?.status === 401) {
-      window.location.href = "/login"; // Force redirect if unauthorized
+      window.location.href = "/login"; // Redirect to login if unauthorized
     }
   }
 };
 
-
-export const getCategoryBreakdown = async (period) => {
+export const getCategoryBreakdown = async (period = 'month', startDate = '', month = '', year = '') => {
   try {
-    return await API.get(`category-breakdown/${period}/`);
+    let url = `category-breakdown/${period}/`;
+    const params = new URLSearchParams();
+    
+    // Add start_date if provided
+    if (startDate && period === 'month') {
+      params.append('start_date', startDate);
+    }
+    
+    // Add month and year if both are provided
+    if (month && year) {
+      params.append('month', month);
+      params.append('year', year);
+    }
+    
+    // Append params to URL if any exist
+    const queryString = params.toString();
+    if (queryString) {
+      url += `?${queryString}`;
+    }
+
+    // Make API request
+    return await API.get(url);
   } catch (error) {
     console.error("Error fetching category breakdown:", error);
     if (error.response?.status === 401) {
-      window.location.href = "/login"; // Force redirect if unauthorized
+      window.location.href = "/login"; // Redirect to login if unauthorized
     }
   }
 };

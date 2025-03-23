@@ -35,62 +35,68 @@ def register_user(request):
 
     return Response({"message": "User created successfully"}, status=status.HTTP_201_CREATED)
 
-@api_view(['GET'])
-def category_breakdown(request, period):
-    if period not in ['month', 'week']:
-        return Response({"error": "Invalid period. Choose 'month' or 'week'."}, status=400)
-
-    today = datetime.now().date()  # Get today's date
-    data = []  # Initialize empty data list
-
-    # Function to get start date for a given period
-    def get_start_date(period, current=True):
-        if period == 'month':
-            if current:
-                return today.replace(day=1)  # First day of the current month
-            else:
-                first_day_current_month = today.replace(day=1)
-                return (first_day_current_month - timedelta(days=1)).replace(day=1)  # First day of previous month
-        elif period == 'week':
-            if current:
-                return today - timedelta(days=today.weekday())  # Start of current week (Monday)
-            else:
-                return today - timedelta(days=today.weekday() + 7)  # Start of previous week
-
-    # 1️⃣ **Check the current period**
-    start_date = get_start_date(period, current=True)
-    expenses = Expense.objects.filter(date__gte=start_date)
-
-    if not expenses.exists():
-        # 2️⃣ **If no data, check the previous period**
-        start_date = get_start_date(period, current=False)
-        expenses = Expense.objects.filter(date__gte=start_date)
-
-        if not expenses.exists():
-            return Response({'category_breakdown': [], 'message': "No expenses found for the current or previous period."})
-
-    # 3️⃣ **Aggregate category totals**
-    categories = expenses.values('category').annotate(total=Sum('amount'))
-
-    # 4️⃣ **Prepare the response data**
-    data = [{'category': item['category'], 'total': item['total']} for item in categories]
-
-    return Response({'category_breakdown': data, 'start_date': str(start_date)})
 
 @api_view(['GET'])
 def spending_trends(request, period):
     if period not in ['month', 'week']:
         return Response({"error": "Invalid period. Choose 'month' or 'week'."}, status=400)
-
+    
+    # Get filter parameters - support both start_date and month/year filtering
+    start_date = request.GET.get('start_date')
+    month = request.GET.get('month')
+    year = request.GET.get('year')
+    
+    # Base queryset
+    queryset = Expense.objects.all()
+    
+    # Apply filters
+    if start_date:
+        # Parse start_date if provided
+        try:
+            start_date_obj = datetime.strptime(start_date, '%Y-%m-%d').date()
+            queryset = queryset.filter(date__gte=start_date_obj)
+        except ValueError:
+            return Response({"error": "Invalid start_date format. Use YYYY-MM-DD."}, status=400)
+    elif month and year:
+        # Filter by specific month and year
+        try:
+            month_int = int(month)
+            year_int = int(year)
+            
+            # Create date range for the selected month
+            start_date_obj = datetime(year=year_int, month=month_int, day=1).date()
+            if month_int == 12:
+                end_date_obj = datetime(year=year_int+1, month=1, day=1).date()
+            else:
+                end_date_obj = datetime(year=year_int, month=month_int+1, day=1).date()
+                
+            queryset = queryset.filter(date__gte=start_date_obj, date__lt=end_date_obj)
+            
+            print(f"Filtering expenses for {month_int}/{year_int}: {start_date_obj} to {end_date_obj}")
+            
+        except ValueError:
+            return Response({"error": "Invalid month or year format."}, status=400)
+    else:
+        # Default to current month if no filter provided
+        today = datetime.now().date()
+        start_date_obj = today.replace(day=1)
+        queryset = queryset.filter(date__gte=start_date_obj)
+        
+        # If no data in current month, don't default to previous
+        # as that would be confusing with the month selector
+        if not queryset.exists():
+            return Response({'trends': []})
+            
+    # Perform aggregation based on period
     if period == 'month':
-        # Instead of grouping by full month, break down spending into weeks within the month
-        trends = Expense.objects.annotate(week=TruncWeek('date')) \
+        # Break down spending into weeks within the month
+        trends = queryset.annotate(week=TruncWeek('date')) \
             .values('week') \
             .annotate(total=Sum('amount')) \
             .order_by('week')
     elif period == 'week':
         # Group by day within the selected week
-        trends = Expense.objects.annotate(day=TruncDay('date')) \
+        trends = queryset.annotate(day=TruncDay('date')) \
             .values('day') \
             .annotate(total=Sum('amount')) \
             .order_by('day')
@@ -104,7 +110,67 @@ def spending_trends(request, period):
     ]
     
     return Response({'trends': data})
+    
+# Also update category_breakdown endpoint with similar logic
+@api_view(['GET'])
+def category_breakdown(request, period):
+    if period not in ['month', 'week']:
+        return Response({"error": "Invalid period. Choose 'month' or 'week'."}, status=400)
+    
+    # Get filter parameters - support both start_date and month/year filtering
+    start_date = request.GET.get('start_date')
+    month = request.GET.get('month')
+    year = request.GET.get('year')
+    
+    # Base queryset
+    queryset = Expense.objects.all()
+    
+    # Apply filters - same logic as spending_trends
+    if start_date:
+        try:
+            start_date_obj = datetime.strptime(start_date, '%Y-%m-%d').date()
+            queryset = queryset.filter(date__gte=start_date_obj)
+        except ValueError:
+            return Response({"error": "Invalid start_date format. Use YYYY-MM-DD."}, status=400)
+    elif month and year:
+        try:
+            month_int = int(month)
+            year_int = int(year)
+            
+            # Create date range for the selected month
+            start_date_obj = datetime(year=year_int, month=month_int, day=1).date()
+            if month_int == 12:
+                end_date_obj = datetime(year=year_int+1, month=1, day=1).date()
+            else:
+                end_date_obj = datetime(year=year_int, month=month_int+1, day=1).date()
+                
+            queryset = queryset.filter(date__gte=start_date_obj, date__lt=end_date_obj)
+            
+        except ValueError:
+            return Response({"error": "Invalid month or year format."}, status=400)
+    else:
+        # Default to current month
+        today = datetime.now().date()
+        start_date_obj = today.replace(day=1)
+        queryset = queryset.filter(date__gte=start_date_obj)
+        
+        # If no data in current month, don't default to previous
+        if not queryset.exists():
+            return Response({'category_breakdown': []})
 
+    # Aggregate category totals
+    categories = queryset.values('category').annotate(total=Sum('amount'))
+
+    # Prepare the response data
+    data = [{'category': item['category'], 'total': item['total']} for item in categories]
+    
+    return Response({
+        'category_breakdown': data, 
+        'period_info': {
+            'month': month if month else start_date_obj.month,
+            'year': year if year else start_date_obj.year
+        }
+    })
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
